@@ -2,6 +2,8 @@ import {
   DialogButton,
   Dropdown,
   Focusable,
+  Navigation,
+  QuickAccessTab,
   Spinner,
   TextField,
   useParams,
@@ -23,6 +25,14 @@ import {
 export const ROUTE = "/claude-sessions/:sessionId";
 export const sessionPath = (id: string) => `/claude-sessions/${id}`;
 export const NEW_SESSION = "new";
+
+// B leaves the session page and reopens the Decky tab of the Quick Access
+// Menu, where the plugin panel was, instead of falling back to Steam's
+// previous page.
+function backToPanel() {
+  Navigation.NavigateBack();
+  Navigation.OpenQuickAccessMenu(QuickAccessTab.Decky);
+}
 
 const HEADER_HEIGHT = 40;
 const FOOTER_HEIGHT = 48;
@@ -150,7 +160,12 @@ export default function SessionPage() {
   const subtitle = session?.cwd || cwd;
 
   return (
-    <div
+    <Focusable
+      onCancel={(e) => {
+        e.stopPropagation();
+        backToPanel();
+      }}
+      onCancelActionDescription="Back to Claude Sessions"
       style={{
         // Leave room for Steam's header (40px) and its bottom button bar (~40px),
         // which is drawn over route pages in Game Mode.
@@ -227,6 +242,6 @@ export default function SessionPage() {
           </DialogButton>
         )}
       </Focusable>
-    </div>
+    </Focusable>
   );
 }

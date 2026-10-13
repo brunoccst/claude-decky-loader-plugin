@@ -1,6 +1,6 @@
 {
   "name": "claude-decky-loader-plugin",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Decky Loader plugin to manage Claude Code sessions from Steam Big Picture",
   "type": "module",
   "scripts": {
