@@ -51,6 +51,9 @@ export interface Status {
   projects_dir: string;
   has_projects: boolean;
   home: string;
+  /** "background": the systemd user service; "plugin": running inside Decky. */
+  service: "background" | "plugin";
+  service_error: string | null;
 }
 
 export type JobEvent =

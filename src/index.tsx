@@ -256,6 +256,14 @@ function Content() {
             <div style={{ fontSize: 11, opacity: 0.5 }}>{status.version}</div>
           </PanelSectionRow>
         )}
+        {status?.service === "plugin" && (
+          <PanelSectionRow>
+            <div style={{ fontSize: 11, opacity: 0.7 }}>
+              Running inside Decky, so Remote Control stops if Decky does.
+              {status.service_error ? ` ${status.service_error}` : ""}
+            </div>
+          </PanelSectionRow>
+        )}
       </PanelSection>
       <UpdateSection />
     </>
