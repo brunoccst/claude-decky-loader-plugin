@@ -121,9 +121,9 @@ class Plugin:
     # Sessions
     # ------------------------------------------------------------------ #
 
-    async def list_sessions(self, limit: int = 50) -> list:
+    async def list_sessions(self, limit: int = 50, cwd: str = "") -> list:
         sessions = await asyncio.get_event_loop().run_in_executor(
-            None, cs.list_sessions, decky.DECKY_USER_HOME, int(limit)
+            None, cs.list_sessions, decky.DECKY_USER_HOME, int(limit), cwd or ""
         )
         remote = set(self.remotes.active_keys())
         for s in sessions:
@@ -131,6 +131,9 @@ class Plugin:
             s["running_job"] = job.id if job else None
             s["remote"] = s["id"] in remote
         return sessions
+
+    async def list_projects(self) -> list:
+        return await asyncio.get_event_loop().run_in_executor(None, cs.list_projects, decky.DECKY_USER_HOME)
 
     async def get_session(self, session_id: str, max_messages: int = 200):
         session = await asyncio.get_event_loop().run_in_executor(

@@ -4,9 +4,11 @@ A [Decky Loader](https://decky.xyz) plugin that lets you manage your
 [Claude Code](https://docs.claude.com/en/docs/claude-code) sessions from Steam
 Big Picture / Steam Deck Game Mode.
 
-- **Browse sessions** from the Quick Access Menu: every Claude Code session on
-  the device, newest first, with its title, project folder and last activity.
-- **Read a session** in a full-screen view that's navigable with the D-pad:
+- **Browse projects and sessions** from the Quick Access Menu: the folders
+  you've used Claude Code in, each with its sessions, plus the most recent
+  sessions across all projects. Start a new session in a project from there.
+- **Read a session** in a full-screen view that's navigable with the D-pad
+  (Back or B returns to the panel):
   your prompts, Claude's replies and a compact line per tool call.
 - **Continue a session** by typing a prompt (the Steam on-screen keyboard
   opens). Claude's reply streams in live, and you can stop it.

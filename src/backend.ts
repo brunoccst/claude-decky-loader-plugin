@@ -79,7 +79,16 @@ export const REMOTE_SERVER = "server";
 export const getStatus = callable<[], Status>("get_status");
 export const getSettings = callable<[], Settings>("get_settings");
 export const setSettings = callable<[settings: Partial<Settings>], Settings>("set_settings");
-export const listSessions = callable<[limit: number], SessionSummary[]>("list_sessions");
+export interface Project {
+  cwd: string;
+  name: string;
+  sessions: number;
+  updated: number;
+  exists: boolean;
+}
+
+export const listSessions = callable<[limit: number, cwd?: string], SessionSummary[]>("list_sessions");
+export const listProjects = callable<[], Project[]>("list_projects");
 export const getSession = callable<[sessionId: string, maxMessages: number], Session | null>("get_session");
 export const recentFolders = callable<[], string[]>("recent_folders");
 export const sendPrompt = callable<

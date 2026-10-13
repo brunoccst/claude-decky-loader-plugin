@@ -246,7 +246,8 @@ def find_session_file(user_home: str, session_id: str) -> Optional[str]:
     return None
 
 
-def list_sessions(user_home: str, limit: int = 50) -> List[Dict[str, Any]]:
+def list_sessions(user_home: str, limit: int = 50, cwd: str = "") -> List[Dict[str, Any]]:
+    """Sessions newest first, optionally only those that ran in `cwd`."""
     root = projects_dir(user_home)
     files = []
     try:
@@ -264,7 +265,7 @@ def list_sessions(user_home: str, limit: int = 50) -> List[Dict[str, Any]]:
     out = []
     for _, path in files:
         summary = session_summary(path)
-        if summary:
+        if summary and (not cwd or summary["cwd"] == cwd):
             out.append(summary)
             if len(out) >= limit:
                 break
@@ -282,6 +283,23 @@ def get_session(user_home: str, session_id: str, max_messages: int = 200) -> Opt
     summary["truncated"] = len(messages) > max_messages
     summary["messages"] = messages[-max_messages:]
     return summary
+
+
+def list_projects(user_home: str) -> List[Dict[str, Any]]:
+    """Project folders (the cwd sessions ran in), most recently used first."""
+    projects: Dict[str, Dict[str, Any]] = {}
+    for s in list_sessions(user_home, limit=100000):
+        if not s["cwd"]:
+            continue
+        p = projects.setdefault(s["cwd"], {
+            "cwd": s["cwd"],
+            "name": s["project"] or s["cwd"],
+            "sessions": 0,
+            "updated": s["updated"],
+            "exists": os.path.isdir(s["cwd"]),
+        })
+        p["sessions"] += 1
+    return list(projects.values())
 
 
 def recent_cwds(user_home: str, limit: int = 15) -> List[str]:

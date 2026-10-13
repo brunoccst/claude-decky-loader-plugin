@@ -27,6 +27,12 @@ export const ROUTE = "/claude-sessions/:sessionId";
 export const sessionPath = (id: string) => `/claude-sessions/${id}`;
 export const NEW_SESSION = "new";
 
+// Folder to preselect on the next new session page, set by the panel's "New session here".
+let newSessionFolder = "";
+export function setNewSessionFolder(cwd: string) {
+  newSessionFolder = cwd;
+}
+
 // B leaves the session page and reopens the Decky tab of the Quick Access
 // Menu, where the plugin panel was, instead of falling back to Steam's
 // previous page.
@@ -97,9 +103,12 @@ export default function SessionPage() {
   useEffect(() => {
     load(sessionId);
     if (!sessionId) {
+      const preset = newSessionFolder;
+      newSessionFolder = "";
       recentFolders().then((f) => {
-        setFolders(f);
-        setCwd((c) => c || f[0] || "");
+        const list = preset && !f.includes(preset) ? [preset, ...f] : f;
+        setFolders(list);
+        setCwd((c) => c || preset || list[0] || "");
       });
     }
   }, []);
@@ -180,12 +189,17 @@ export default function SessionPage() {
         color: "#e8eaed",
       }}
     >
-      <div style={{ padding: "12px 0 8px" }}>
-        <div style={{ fontSize: 20, fontWeight: "bold", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {title}
+      <Focusable style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0 8px" }} flow-children="horizontal">
+        <DialogButton style={{ width: 90, minWidth: 0, padding: "6px 10px" }} onClick={backToPanel}>
+          ← Back
+        </DialogButton>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 20, fontWeight: "bold", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {title}
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.6 }}>{subtitle}</div>
         </div>
-        <div style={{ fontSize: 12, opacity: 0.6 }}>{subtitle}</div>
-      </div>
+      </Focusable>
       {sessionId && <SessionRemoteControl sessionId={sessionId} busy={running || sending} />}
 
       <Focusable style={{ flex: 1, overflowY: "auto", paddingRight: 8 }}>

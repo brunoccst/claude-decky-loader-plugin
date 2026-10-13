@@ -15,14 +15,16 @@ import { ClaudeIcon } from "./ClaudeIcon";
 import {
   getSettings,
   getStatus,
+  listProjects,
   listSessions,
+  Project,
   SessionSummary,
   setSettings,
   Settings,
   Status,
   timeAgo,
 } from "./backend";
-import SessionPage, { NEW_SESSION, ROUTE, sessionPath } from "./SessionPage";
+import SessionPage, { NEW_SESSION, ROUTE, sessionPath, setNewSessionFolder } from "./SessionPage";
 import { UpdateSection } from "./components/UpdateSection";
 import { RemoteServerSection } from "./components/RemoteControl";
 import { checkForUpdate } from "./updater";
@@ -38,6 +40,46 @@ const PERMISSION_LABELS: Record<string, string> = {
 function open(path: string) {
   Navigation.Navigate(path);
   Navigation.CloseSideMenus();
+}
+
+function newSession(cwd = "") {
+  setNewSessionFolder(cwd);
+  open(sessionPath(NEW_SESSION));
+}
+
+function SessionRows({ sessions, showProject }: { sessions: SessionSummary[] | null; showProject: boolean }) {
+  if (sessions === null) return <PanelSectionRow>Loading…</PanelSectionRow>;
+  if (sessions.length === 0) {
+    return (
+      <PanelSectionRow>
+        <div style={{ fontSize: 12, opacity: 0.7 }}>No Claude Code sessions here yet.</div>
+      </PanelSectionRow>
+    );
+  }
+  return (
+    <>
+      {sessions.map((s) => (
+        <PanelSectionRow key={s.id}>
+          <ButtonItem
+            layout="below"
+            description={[
+              s.running_job ? "● working" : "",
+              s.remote ? "📱 remote" : "",
+              showProject ? s.project || s.cwd : "",
+              timeAgo(s.updated),
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+            onClick={() => open(sessionPath(s.id))}
+          >
+            <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "left" }}>
+              {s.title}
+            </div>
+          </ButtonItem>
+        </PanelSectionRow>
+      ))}
+    </>
+  );
 }
 
 function SettingsModal({ closeModal, initial }: { closeModal?: () => void; initial: Settings }) {
@@ -79,57 +121,114 @@ function SettingsModal({ closeModal, initial }: { closeModal?: () => void; initi
   );
 }
 
+// Kept between panel openings so the panel reopens on the same project.
+let lastProject: Project | null = null;
+
 function Content() {
   const [status, setStatus] = useState<Status | null>(null);
+  const [project, setProjectState] = useState<Project | null>(lastProject);
+  const [projects, setProjects] = useState<Project[] | null>(null);
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null);
 
+  const setProject = (p: Project | null) => {
+    lastProject = p;
+    setProjectState(p);
+  };
+
   const refresh = async () => {
-    setSessions(await listSessions(30));
+    setSessions(null);
+    if (project) {
+      setSessions(await listSessions(100, project.cwd));
+    } else {
+      const [p, s] = await Promise.all([listProjects(), listSessions(10)]);
+      setProjects(p);
+      setSessions(s);
+    }
   };
 
   useEffect(() => {
     getStatus().then(setStatus);
-    refresh();
   }, []);
+  useEffect(() => {
+    refresh();
+  }, [project?.cwd]);
+
+  const noCli = !status?.claude_path;
 
   return (
     <>
-      <PanelSection>
-        {status && !status.claude_path && (
+      {status && noCli && (
+        <PanelSection>
           <PanelSectionRow>
             <div style={{ fontSize: 12, color: "#ff8a80" }}>
               Claude Code CLI not found. Install it on this device (curl -fsSL https://claude.ai/install.sh | bash)
               and sign in once from desktop mode, or set its path in settings.
             </div>
           </PanelSectionRow>
-        )}
-        <PanelSectionRow>
-          <ButtonItem layout="below" onClick={() => open(sessionPath(NEW_SESSION))} disabled={!status?.claude_path}>
-            New session
-          </ButtonItem>
-        </PanelSectionRow>
-      </PanelSection>
+        </PanelSection>
+      )}
 
-      <PanelSection title="Sessions">
-        {sessions === null && <PanelSectionRow>Loading…</PanelSectionRow>}
-        {sessions?.length === 0 && (
+      {project ? (
+        <PanelSection title={project.name}>
           <PanelSectionRow>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>No Claude Code sessions on this device yet.</div>
-          </PanelSectionRow>
-        )}
-        {sessions?.map((s) => (
-          <PanelSectionRow key={s.id}>
-            <ButtonItem
-              layout="below"
-              description={`${s.running_job ? "● working · " : ""}${s.remote ? "📱 remote · " : ""}${s.project || s.cwd} · ${timeAgo(s.updated)}`}
-              onClick={() => open(sessionPath(s.id))}
-            >
-              <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "left" }}>
-                {s.title}
-              </div>
+            <ButtonItem layout="below" onClick={() => setProject(null)}>
+              ← All projects
             </ButtonItem>
           </PanelSectionRow>
-        ))}
+          <PanelSectionRow>
+            <div style={{ fontSize: 11, opacity: 0.6, wordBreak: "break-all" }}>{project.cwd}</div>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonItem
+              layout="below"
+              onClick={() => newSession(project.cwd)}
+              disabled={noCli || !project.exists}
+              description={project.exists ? undefined : "This folder doesn't exist anymore."}
+            >
+              New session here
+            </ButtonItem>
+          </PanelSectionRow>
+          <SessionRows sessions={sessions} showProject={false} />
+        </PanelSection>
+      ) : (
+        <>
+          <PanelSection>
+            <PanelSectionRow>
+              <ButtonItem layout="below" onClick={() => newSession()} disabled={noCli}>
+                New session
+              </ButtonItem>
+            </PanelSectionRow>
+          </PanelSection>
+
+          <PanelSection title="Projects">
+            {projects === null && <PanelSectionRow>Loading…</PanelSectionRow>}
+            {projects?.length === 0 && (
+              <PanelSectionRow>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>No Claude Code projects on this device yet.</div>
+              </PanelSectionRow>
+            )}
+            {projects?.map((p) => (
+              <PanelSectionRow key={p.cwd}>
+                <ButtonItem
+                  layout="below"
+                  description={`${p.sessions} session${p.sessions === 1 ? "" : "s"} · ${timeAgo(p.updated)}`}
+                  onClick={() => setProject(p)}
+                >
+                  <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "left" }}>
+                    {p.name}
+                  </div>
+                </ButtonItem>
+              </PanelSectionRow>
+            ))}
+          </PanelSection>
+
+          <PanelSection title="Recent sessions">
+            <SessionRows sessions={sessions} showProject={true} />
+          </PanelSection>
+        </>
+      )}
+
+      <PanelSection>
         <PanelSectionRow>
           <ButtonItem layout="below" onClick={refresh}>
             Refresh
@@ -137,7 +236,7 @@ function Content() {
         </PanelSectionRow>
       </PanelSection>
 
-      <RemoteServerSection disabled={!status?.claude_path} />
+      <RemoteServerSection disabled={noCli} />
 
       <PanelSection>
         <PanelSectionRow>
