@@ -12,9 +12,10 @@ Big Picture / Steam Deck Game Mode.
   opens). Claude's reply streams in live, and you can stop it.
 - **Start a new session** in any folder, picked from recent projects or with
   the folder browser.
-- **Remote Control**: continue a session from the Claude app on your phone or
-  claude.ai/code, or run the Remote Control server so you can start new
-  sessions on the Deck from your phone. Both keep running in Game Mode.
+- **Remote Control**: continue a session from claude.ai/code or the Claude app
+  on any device (laptop, phone, tablet), or run the Remote Control server so
+  you can start new sessions on the Deck from them. Both keep running in Game
+  Mode.
 
 Unofficial; not affiliated with Anthropic or Valve.
 
@@ -44,11 +45,11 @@ from a Desktop Mode terminal, that process stops when you switch to Game Mode,
 because the desktop session ends. The plugin runs it from Decky's backend
 instead, which keeps running across mode switches.
 
-- **Continue on phone** on a session page runs
+- **Start Remote Session** on a session page runs
   `claude --remote-control <title> --resume <id>` in the session's folder.
   The session then shows up in the Claude app under its title. Prompts from
   the Deck are paused for that session until you stop Remote Control.
-- **Start sessions from your phone** in the panel runs `claude remote-control`
+- **Start sessions from other devices** in the panel runs `claude remote-control`
   (server mode) in your default folder. It starts again when Decky loads,
   until you turn it off.
 
