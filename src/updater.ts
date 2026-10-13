@@ -1,14 +1,16 @@
-import { callable, fetchNoCors } from "@decky/api";
+import { callable } from "@decky/api";
 
-// Updates come from this repo's GitHub releases and are installed through
-// Decky's own installer, which shows its usual confirmation prompt.
-const RELEASES_URL =
-  "https://api.github.com/repos/brunoccst/claude-decky-loader-plugin/releases?per_page=10";
-const ASSET_NAME = "claude-sessions.zip";
+// Updates come from this repo's GitHub releases (looked up by the backend, see
+// py_modules/releases.py) and are installed through Decky's own installer,
+// which shows its usual confirmation prompt.
 const PLUGIN_NAME = "Claude Sessions"; // must match plugin.json
 const INSTALL_TYPE_UPDATE = 2;
 
 export const getVersion = callable<[], string>("get_version");
+const getReleases = callable<
+  [],
+  { releases?: { version: string; url: string; hash: string }[]; error?: string }
+>("get_releases");
 
 export interface UpdateInfo {
   current: string;
@@ -53,34 +55,33 @@ export function compareVersions(a: string, b: string): number {
   return 0;
 }
 
+// Rejects if `promise` hasn't settled after `ms`, so the UI never waits forever.
+function withTimeout<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${what} timed out`)), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
+
 // Returns the newest release if it's newer than what's installed, otherwise null.
 export async function checkForUpdate(): Promise<UpdateInfo | null> {
-  const current = await getVersion();
-  const res = await fetchNoCors(RELEASES_URL, {
-    headers: { Accept: "application/vnd.github+json" },
-  });
-  if (!res.ok) {
-    throw new Error(
-      res.status === 404
-        ? "GitHub returned 404. The repository has to be public for updates."
-        : `GitHub returned ${res.status}`,
-    );
-  }
+  const current = await withTimeout(getVersion(), 5000, "Reading the installed version");
+  const res = await withTimeout(getReleases(), 20000, "Checking GitHub");
+  if (res.error || !res.releases) throw new Error(res.error ?? "No answer from GitHub");
 
-  const releases: any[] = await res.json();
   let newest: UpdateInfo | null = null;
-  for (const release of releases) {
-    if (release.draft) continue;
-    const asset = release.assets?.find((a: any) => a.name === ASSET_NAME);
-    if (!asset) continue;
-    const latest = String(release.tag_name).replace(/^v/, "");
-    if (!newest || compareVersions(latest, newest.latest) > 0) {
-      newest = {
-        current,
-        latest,
-        url: asset.browser_download_url,
-        hash: String(asset.digest ?? "").replace(/^sha256:/, ""),
-      };
+  for (const release of res.releases) {
+    if (!newest || compareVersions(release.version, newest.latest) > 0) {
+      newest = { current, latest: release.version, url: release.url, hash: release.hash };
     }
   }
   return newest && compareVersions(newest.latest, current) > 0 ? newest : null;
