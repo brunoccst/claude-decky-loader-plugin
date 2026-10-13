@@ -1,0 +1,11 @@
+{
+  "name": "Claude Sessions",
+  "author": "brunoccst",
+  "flags": [],
+  "api_version": 1,
+  "publish": {
+    "tags": ["claude", "ai", "developer"],
+    "description": "Browse, read and continue your Claude Code sessions from Steam Big Picture / Game Mode.",
+    "image": "https://opengraph.githubassets.com/1/brunoccst/claude-decky-loader-plugin"
+  }
+}
