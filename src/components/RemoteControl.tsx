@@ -97,7 +97,7 @@ export function RemoteServerSection({ disabled }: { disabled: boolean }) {
     <PanelSection title="Remote Control">
       <PanelSectionRow>
         <ToggleField
-          label="Start sessions from your phone"
+          label="Start sessions from other devices"
           description="Runs Claude Code's Remote Control server in your default folder. It keeps running in Game Mode and after a restart."
           checked={active}
           disabled={disabled}
@@ -124,10 +124,10 @@ export function SessionRemoteControl({ sessionId, busy }: { sessionId: string; b
           disabled={!active && busy}
           onClick={active ? stop : start}
         >
-          {active ? "Stop Remote Control" : "Continue on phone"}
+          {active ? "Stop Remote Session" : "Start Remote Session"}
         </DialogButton>
         {!active && !remote?.error && (
-          <div style={{ fontSize: 12, opacity: 0.6 }}>Opens this session in the Claude app with Remote Control.</div>
+          <div style={{ fontSize: 12, opacity: 0.6 }}>Continue this session from claude.ai/code or the Claude app on any device.</div>
         )}
       </Focusable>
       {remote && (active || remote.error) && (
