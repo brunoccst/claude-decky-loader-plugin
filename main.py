@@ -62,6 +62,9 @@ class Plugin:
     # Status
     # ------------------------------------------------------------------ #
 
+    async def get_version(self) -> str:
+        return decky.DECKY_PLUGIN_VERSION
+
     def _claude(self):
         return cs.find_claude(decky.DECKY_USER_HOME, self.settings.get("claude_path", ""))
 

@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to create, e.g. v0.2.0 (a hyphen marks a pre-release)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - name: Package plugin zip
+        run: |
+          mkdir -p out/claude-sessions/dist out/claude-sessions/py_modules
+          cp dist/index.js out/claude-sessions/dist/
+          cp py_modules/*.py out/claude-sessions/py_modules/
+          cp package.json plugin.json main.py LICENSE README.md out/claude-sessions/
+          cd out && zip -r claude-sessions.zip claude-sessions
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          files: out/claude-sessions.zip
+          prerelease: ${{ contains(inputs.tag || github.ref_name, '-') }}
+          generate_release_notes: true

@@ -57,6 +57,18 @@ without asking; only use it in folders you're happy for it to touch.
 | Model | Claude Code default | Passed as `--model`, e.g. `opus` or `sonnet`. |
 | Default folder | home folder | Preselected folder for new sessions. |
 
+## Updates
+
+The plugin checks this repo's GitHub releases when it starts and has a
+**Check for updates** button at the bottom of its panel. Updates install
+through Decky's own installer, which asks you to confirm, and are verified
+against the release asset's sha256 digest. This only works while the
+repository is public, because Decky downloads without signing in to GitHub.
+
+To publish a release, bump `version` in `package.json`, then run the
+**Release** workflow from the Actions tab with a matching tag such as
+`v0.2.0` (a hyphen marks a pre-release), or push that tag.
+
 ## Development
 
 ```sh

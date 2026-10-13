@@ -23,6 +23,8 @@ import {
   timeAgo,
 } from "./backend";
 import SessionPage, { NEW_SESSION, ROUTE, sessionPath } from "./SessionPage";
+import { UpdateSection } from "./components/UpdateSection";
+import { checkForUpdate } from "./updater";
 
 const PERMISSION_LABELS: Record<string, string> = {
   "": "Claude Code default",
@@ -152,12 +154,25 @@ function Content() {
           </PanelSectionRow>
         )}
       </PanelSection>
+      <UpdateSection />
     </>
   );
 }
 
 export default definePlugin(() => {
   routerHook.addRoute(ROUTE, SessionPage, { exact: true });
+
+  // Let the user know about a new release once per boot; the panel has the button.
+  checkForUpdate()
+    .then((update) => {
+      if (update) {
+        toaster.toast({
+          title: "Claude Sessions",
+          body: `Version ${update.latest} is available. Update it from the Claude Sessions panel.`,
+        });
+      }
+    })
+    .catch(() => {});
 
   return {
     name: "Claude Sessions",
