@@ -3,7 +3,7 @@ import { callable } from "@decky/api";
 // Updates come from this repo's GitHub releases (looked up by the backend, see
 // py_modules/releases.py) and are installed through Decky's own installer,
 // which shows its usual confirmation prompt.
-const PLUGIN_NAME = "Claude Sessions"; // must match plugin.json
+export const PLUGIN_NAME = "Claude Sessions"; // must match plugin.json
 const INSTALL_TYPE_UPDATE = 2;
 
 export const getVersion = callable<[], string>("get_version");
