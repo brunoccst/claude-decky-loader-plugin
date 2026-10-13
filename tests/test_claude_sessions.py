@@ -71,6 +71,19 @@ class TranscriptTests(unittest.TestCase):
         self.assertEqual(s["project"], "proj")
         self.assertEqual(s["turns"], 1)
 
+    def test_projects_and_filter(self):
+        other = os.path.join(self.home, "other")
+        os.makedirs(other)
+        write_transcript(self.home, other, "99999999-2222-3333-4444-555555555555")
+        write_transcript(self.home, self.cwd, "88888888-2222-3333-4444-555555555555")
+        projects = {p["cwd"]: p for p in cs.list_projects(self.home)}
+        self.assertEqual(projects[self.cwd]["sessions"], 2)
+        self.assertEqual(projects[self.cwd]["name"], "proj")
+        self.assertEqual(projects[other]["sessions"], 1)
+        self.assertTrue(projects[other]["exists"])
+        self.assertEqual(len(cs.list_sessions(self.home, cwd=other)), 1)
+        self.assertEqual(len(cs.list_sessions(self.home, cwd=self.cwd)), 2)
+
     def test_get_session_messages(self):
         session = cs.get_session(self.home, SESSION_ID)
         kinds = [(m["role"], m["kind"]) for m in session["messages"]]
