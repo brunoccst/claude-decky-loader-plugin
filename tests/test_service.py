@@ -47,6 +47,14 @@ class SocketTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(json.load(fh)["model"], "opus")
         self.assertEqual((await self.client.call("get_settings", {}))["model"], "opus")
 
+    async def test_default_folder_is_created(self):
+        folder = os.path.join(self.home, "claude", "work")
+        saved = await self.client.call("set_settings", [{"default_cwd": folder}])
+        self.assertTrue(os.path.isdir(folder))
+        self.assertNotIn("error", saved)
+        saved = await self.client.call("set_settings", [{"default_cwd": "relative/path"}])
+        self.assertIn("full path", saved["error"])
+
     async def test_errors(self):
         with self.assertRaisesRegex(RuntimeError, "Unknown method"):
             await self.client.call("_save_settings")
