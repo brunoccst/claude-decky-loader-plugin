@@ -20,7 +20,27 @@ Big Picture / Steam Deck Game Mode.
   you can start new sessions on the Deck from them. Both keep running in Game
   Mode.
 
-Unofficial; not affiliated with Anthropic or Valve.
+## Install
+
+The plugin isn't in the Decky Loader store yet, so install it from this
+repository's releases. Set up the [requirements](#requirements) first.
+
+1. Install [Decky Loader](https://decky.xyz) on your Steam Deck.
+2. In Game Mode, open Decky's settings, turn on **Developer mode**, then go to
+   **Developer** › **Install plugin from URL** and enter:
+
+   ```
+   https://github.com/brunoccst/claude-decky-loader-plugin/releases/latest/download/claude-sessions.zip
+   ```
+
+3. Open **Claude Sessions** from the Quick Access Menu.
+
+Or download `claude-sessions.zip` from the
+[latest release](https://github.com/brunoccst/claude-decky-loader-plugin/releases/latest),
+copy it to the Deck, and use **Developer** › **Install plugin from ZIP file**
+instead.
+
+After that, the plugin updates itself (see [Updates](#updates)).
 
 ## How it works
 
@@ -124,6 +144,14 @@ address in `.vscode/settings.json`, copied from `defsettings.json`).
 Scaffolded from the official
 [decky-plugin-template](https://github.com/SteamDeckHomebrew/decky-plugin-template).
 
+## Notes
+
+- This is an unofficial integration, not affiliated with Anthropic or Valve.
+  It uses the Claude Code CLI on your Deck with your own login, so prompts
+  count against your plan or API usage like any other Claude Code session.
+- Sessions are read from Claude Code's local transcript files, which aren't a
+  documented format. A Claude Code update can change them and break things.
+
 ## License
 
-BSD-3-Clause, see [LICENSE](LICENSE).
+[MIT](LICENSE): anyone can use, copy, change and share it, and it comes with no warranty. The author isn't responsible for anything that happens from using it.

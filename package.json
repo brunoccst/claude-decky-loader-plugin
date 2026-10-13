@@ -20,7 +20,7 @@
     "claude-code"
   ],
   "author": "brunoccst",
-  "license": "BSD-3-Clause",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/brunoccst/claude-decky-loader-plugin/issues"
   },
