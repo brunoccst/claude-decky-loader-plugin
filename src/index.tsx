@@ -27,7 +27,8 @@ import {
 import SessionPage, { NEW_SESSION, ROUTE, sessionPath, setNewSessionFolder } from "./SessionPage";
 import { UpdateSection } from "./components/UpdateSection";
 import { RemoteServerSection } from "./components/RemoteControl";
-import { checkForUpdate } from "./updater";
+import { checkForUpdate, PLUGIN_NAME } from "./updater";
+import { refreshPanelAfterReload } from "./reload";
 
 const PERMISSION_LABELS: Record<string, string> = {
   "": "Claude Code default",
@@ -172,7 +173,7 @@ function Content() {
         <PanelSection title={project.name}>
           <PanelSectionRow>
             <ButtonItem layout="below" onClick={() => setProject(null)}>
-              ← All projects
+              ← All folders
             </ButtonItem>
           </PanelSectionRow>
           <PanelSectionRow>
@@ -200,18 +201,18 @@ function Content() {
             </PanelSectionRow>
           </PanelSection>
 
-          <PanelSection title="Projects">
+          <PanelSection title="Folders">
             {projects === null && <PanelSectionRow>Loading…</PanelSectionRow>}
             {projects?.length === 0 && (
               <PanelSectionRow>
-                <div style={{ fontSize: 12, opacity: 0.7 }}>No Claude Code projects on this device yet.</div>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>No Claude Code sessions on this device yet.</div>
               </PanelSectionRow>
             )}
             {projects?.map((p) => (
               <PanelSectionRow key={p.cwd}>
                 <ButtonItem
                   layout="below"
-                  description={`${p.sessions} session${p.sessions === 1 ? "" : "s"} · ${timeAgo(p.updated)}`}
+                  description={`${p.cwd} · ${p.sessions} session${p.sessions === 1 ? "" : "s"} · ${timeAgo(p.updated)}`}
                   onClick={() => setProject(p)}
                 >
                   <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "left" }}>
@@ -263,6 +264,7 @@ function Content() {
 
 export default definePlugin(() => {
   routerHook.addRoute(ROUTE, SessionPage, { exact: true });
+  refreshPanelAfterReload(PLUGIN_NAME);
 
   // Let the user know about a new release once per boot; the panel has the button.
   checkForUpdate()
