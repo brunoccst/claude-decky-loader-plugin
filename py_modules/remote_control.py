@@ -3,8 +3,9 @@
 Remote Control keeps a local `claude` process connected to claude.ai so the
 session can be driven from the Claude app or claude.ai/code. Run from a
 Desktop Mode terminal, that process dies when the Deck switches to Game Mode
-(the desktop session ends). Run from the Decky backend, which is a system
-service, it survives mode switches.
+(the desktop session ends). Run from the Claude Sessions service (a systemd
+user service, see `service.py`), it survives mode switches and keeps going
+when Decky Loader restarts or breaks.
 
 Two kinds are supported:
 

@@ -60,21 +60,48 @@ the plugin settings (for example *Accept edits*) if you want Claude to change
 files from the couch. *Bypass all permissions* lets Claude run any command
 without asking; only use it in folders you're happy for it to touch.
 
+## Background service
+
+Prompts, Remote Control and settings run in a small background service,
+`claude-sessions.service`, a systemd user service the plugin installs and
+starts when Decky loads it. The plugin is only the screen you control it from.
+So when a Steam update breaks Decky Loader, or Decky restarts or updates the
+plugin, Remote Control and running prompts keep going, and you can keep using
+your sessions from claude.ai/code or the Claude app until Decky is fixed.
+
+- The service runs from a copy of the plugin's Python code in
+  `~/.local/share/claude-sessions` with the system `python3`, and keeps its
+  settings in `~/.config/claude-sessions/settings.json`.
+- It's restarted only when a plugin update ships different service code.
+  That stops any Remote Control session that was running; the Remote Control
+  server starts again on its own.
+- Uninstalling the plugin stops and removes the service (settings are kept).
+- If the service can't be set up, the plugin runs everything itself, as
+  before, and says so at the bottom of its panel.
+
+Check on it from Desktop Mode's terminal:
+
+```sh
+systemctl --user status claude-sessions
+journalctl --user -u claude-sessions
+```
+
 ## Remote Control
 
 [Remote Control](https://code.claude.com/docs/en/remote-control) connects a
 Claude Code process on the Deck to the Claude app and claude.ai/code. Started
 from a Desktop Mode terminal, that process stops when you switch to Game Mode,
-because the desktop session ends. The plugin runs it from Decky's backend
-instead, which keeps running across mode switches.
+because the desktop session ends. The plugin runs it from its
+[background service](#background-service) instead, which keeps running across
+mode switches and when Decky isn't working.
 
 - **Start Remote Session** on a session page runs
   `claude --remote-control <title> --resume <id>` in the session's folder.
   The session then shows up in the Claude app under its title. Prompts from
   the Deck are paused for that session until you stop Remote Control.
 - **Start sessions from other devices** in the panel runs `claude remote-control`
-  (server mode) in your default folder. It starts again when Decky loads,
-  until you turn it off.
+  (server mode) in your default folder. It starts again whenever the Deck
+  boots, until you turn it off, even if Decky doesn't load.
 
 Both use the permission mode and model from the plugin settings. The first
 time, Claude Code asks `Enable Remote Control? (y/n)`; the plugin shows the
@@ -129,7 +156,10 @@ pnpm test           # backend unit tests (Python 3.11+, stdlib only)
 
 Layout:
 
-- `main.py`: Decky backend entry point; exposes the RPC methods the UI calls.
+- `main.py`: Decky backend entry point; forwards the UI's calls to the service.
+- `py_modules/service.py`: the background service (prompts, Remote Control,
+  settings) and its Unix-socket protocol; `py_modules/daemon.py` installs it
+  as a systemd user service.
 - `py_modules/claude_sessions.py`: transcript parsing and the CLI job runner
   (no Decky imports, so it is testable anywhere).
 - `src/index.tsx`: Quick Access Menu panel and settings.
