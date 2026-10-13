@@ -24,6 +24,7 @@ import {
 } from "./backend";
 import SessionPage, { NEW_SESSION, ROUTE, sessionPath } from "./SessionPage";
 import { UpdateSection } from "./components/UpdateSection";
+import { RemoteServerSection } from "./components/RemoteControl";
 import { checkForUpdate } from "./updater";
 
 const PERMISSION_LABELS: Record<string, string> = {
@@ -120,7 +121,7 @@ function Content() {
           <PanelSectionRow key={s.id}>
             <ButtonItem
               layout="below"
-              description={`${s.running_job ? "● working · " : ""}${s.project || s.cwd} · ${timeAgo(s.updated)}`}
+              description={`${s.running_job ? "● working · " : ""}${s.remote ? "📱 remote · " : ""}${s.project || s.cwd} · ${timeAgo(s.updated)}`}
               onClick={() => open(sessionPath(s.id))}
             >
               <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "left" }}>
@@ -135,6 +136,8 @@ function Content() {
           </ButtonItem>
         </PanelSectionRow>
       </PanelSection>
+
+      <RemoteServerSection disabled={!status?.claude_path} />
 
       <PanelSection>
         <PanelSectionRow>

@@ -21,6 +21,7 @@ import {
   Session,
   stopJob,
 } from "./backend";
+import { SessionRemoteControl, useRemote } from "./components/RemoteControl";
 
 export const ROUTE = "/claude-sessions/:sessionId";
 export const sessionPath = (id: string) => `/claude-sessions/${id}`;
@@ -154,6 +155,7 @@ export default function SessionPage() {
     }
   };
 
+  const { active: onRemote } = useRemote(sessionId);
   const running = job?.status === "running";
   const messages = [...(session?.messages ?? []), ...(job ? job.messages : [])];
   const title = session?.title ?? (sessionId ? "Session" : "New Claude session");
@@ -184,6 +186,7 @@ export default function SessionPage() {
         </div>
         <div style={{ fontSize: 12, opacity: 0.6 }}>{subtitle}</div>
       </div>
+      {sessionId && <SessionRemoteControl sessionId={sessionId} busy={running || sending} />}
 
       <Focusable style={{ flex: 1, overflowY: "auto", paddingRight: 8 }}>
         {loading && <Spinner style={{ width: 32 }} />}
@@ -221,7 +224,7 @@ export default function SessionPage() {
         <div style={{ flex: 1 }}>
           <TextField
             value={prompt}
-            disabled={running}
+            disabled={running || onRemote}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") send();
@@ -235,7 +238,7 @@ export default function SessionPage() {
         ) : (
           <DialogButton
             style={{ width: 120, minWidth: 0 }}
-            disabled={!prompt.trim() || sending || (!sessionId && !cwd)}
+            disabled={!prompt.trim() || sending || onRemote || (!sessionId && !cwd)}
             onClick={send}
           >
             {sending ? "Sending…" : "Send"}

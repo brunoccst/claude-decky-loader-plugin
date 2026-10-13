@@ -28,9 +28,10 @@ export interface SessionSummary {
   updated: number;
   turns: number;
   running_job?: string | null;
+  remote?: boolean;
 }
 
-export interface Session extends Omit<SessionSummary, "running_job"> {
+export interface Session extends Omit<SessionSummary, "running_job" | "remote"> {
   messages: Message[];
   truncated: boolean;
   running_job: Job | null;
@@ -59,6 +60,22 @@ export type JobEvent =
 
 export const JOB_EVENT = "claude_job";
 
+/** A Claude Code Remote Control process: the server (key "server") or one session (key = session id). */
+export interface Remote {
+  key: string;
+  name: string;
+  cwd: string;
+  status: "starting" | "running" | "question" | "exited";
+  url: string | null;
+  question: string | null;
+  error: string | null;
+  started: number;
+  output: string;
+}
+
+export const REMOTE_EVENT = "claude_remote";
+export const REMOTE_SERVER = "server";
+
 export const getStatus = callable<[], Status>("get_status");
 export const getSettings = callable<[], Settings>("get_settings");
 export const setSettings = callable<[settings: Partial<Settings>], Settings>("set_settings");
@@ -71,6 +88,12 @@ export const sendPrompt = callable<
 >("send_prompt");
 export const getJob = callable<[jobId: string], Job | null>("get_job");
 export const stopJob = callable<[jobId: string], boolean>("stop_job");
+
+export const listRemotes = callable<[], Remote[]>("list_remotes");
+export const getRemote = callable<[key: string], Remote | null>("get_remote");
+export const startRemote = callable<[key: string], { remote?: Remote; error?: string }>("start_remote");
+export const answerRemote = callable<[key: string, text: string], boolean>("answer_remote");
+export const stopRemote = callable<[key: string], boolean>("stop_remote");
 
 export function timeAgo(epochSeconds: number): string {
   const s = Math.max(0, Date.now() / 1000 - epochSeconds);

@@ -23,6 +23,7 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
     "permission_mode": "",
     "model": "",
     "default_cwd": "",
+    "remote_server": "",  # "1" keeps the Remote Control server running
 }
 
 # Text Claude Code injects into user turns that isn't something the person typed.

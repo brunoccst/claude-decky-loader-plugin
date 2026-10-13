@@ -12,6 +12,9 @@ Big Picture / Steam Deck Game Mode.
   opens). Claude's reply streams in live, and you can stop it.
 - **Start a new session** in any folder, picked from recent projects or with
   the folder browser.
+- **Remote Control**: continue a session from the Claude app on your phone or
+  claude.ai/code, or run the Remote Control server so you can start new
+  sessions on the Deck from your phone. Both keep running in Game Mode.
 
 Unofficial; not affiliated with Anthropic or Valve.
 
@@ -32,6 +35,29 @@ Claude Code's default permission mode. Pick a different **Permission mode** in
 the plugin settings (for example *Accept edits*) if you want Claude to change
 files from the couch. *Bypass all permissions* lets Claude run any command
 without asking; only use it in folders you're happy for it to touch.
+
+## Remote Control
+
+[Remote Control](https://code.claude.com/docs/en/remote-control) connects a
+Claude Code process on the Deck to the Claude app and claude.ai/code. Started
+from a Desktop Mode terminal, that process stops when you switch to Game Mode,
+because the desktop session ends. The plugin runs it from Decky's backend
+instead, which keeps running across mode switches.
+
+- **Continue on phone** on a session page runs
+  `claude --remote-control <title> --resume <id>` in the session's folder.
+  The session then shows up in the Claude app under its title. Prompts from
+  the Deck are paused for that session until you stop Remote Control.
+- **Start sessions from your phone** in the panel runs `claude remote-control`
+  (server mode) in your default folder. It starts again when Decky loads,
+  until you turn it off.
+
+Both use the permission mode and model from the plugin settings. The first
+time, Claude Code asks `Enable Remote Control? (y/n)`; the plugin shows the
+question with Yes and No buttons. Remote Control needs a claude.ai login on a
+Pro, Max, Team or Enterprise plan; API keys don't work. Your home folder is
+never saved as trusted, so pick a project folder as the default folder for the
+server, or expect to confirm the trust question each time.
 
 ## Requirements
 
@@ -84,6 +110,8 @@ Layout:
   (no Decky imports, so it is testable anywhere).
 - `src/index.tsx`: Quick Access Menu panel and settings.
 - `src/SessionPage.tsx`: full-screen session view at `/claude-sessions/:id`.
+- `py_modules/remote_control.py` and `src/components/RemoteControl.tsx`:
+  Remote Control processes, run in a pseudo-terminal.
 
 To package and deploy to a Deck, use the [Decky CLI](https://github.com/SteamDeckHomebrew/cli)
 (`decky plugin build .`) or the VS Code tasks in `.vscode/` (set your Deck's
