@@ -6,6 +6,7 @@ import subprocess
 import decky
 
 import claude_sessions as cs
+import releases
 
 
 class Plugin:
@@ -64,6 +65,14 @@ class Plugin:
 
     async def get_version(self) -> str:
         return decky.DECKY_PLUGIN_VERSION
+
+    async def get_releases(self) -> dict:
+        try:
+            found = await asyncio.get_event_loop().run_in_executor(None, releases.fetch_releases)
+            return {"releases": found}
+        except Exception as exc:
+            decky.logger.warning("update check failed: %s", exc)
+            return {"error": str(exc)}
 
     def _claude(self):
         return cs.find_claude(decky.DECKY_USER_HOME, self.settings.get("claude_path", ""))

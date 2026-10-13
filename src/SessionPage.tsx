@@ -24,6 +24,9 @@ export const ROUTE = "/claude-sessions/:sessionId";
 export const sessionPath = (id: string) => `/claude-sessions/${id}`;
 export const NEW_SESSION = "new";
 
+const HEADER_HEIGHT = 40;
+const FOOTER_HEIGHT = 48;
+
 const COLORS: Record<Message["role"], string> = {
   user: "#2b4a6b",
   assistant: "#2a2d34",
@@ -149,8 +152,10 @@ export default function SessionPage() {
   return (
     <div
       style={{
-        marginTop: 40,
-        height: "calc(100% - 40px)",
+        // Leave room for Steam's header (40px) and its bottom button bar (~40px),
+        // which is drawn over route pages in Game Mode.
+        marginTop: HEADER_HEIGHT,
+        height: `calc(100% - ${HEADER_HEIGHT + FOOTER_HEIGHT}px)`,
         display: "flex",
         flexDirection: "column",
         padding: "0 24px",
