@@ -11,7 +11,7 @@ import {
 } from "@decky/ui";
 import { definePlugin, routerHook, toaster } from "@decky/api";
 import { useEffect, useState } from "react";
-import { FaTerminal } from "react-icons/fa";
+import { ClaudeIcon } from "./ClaudeIcon";
 import {
   getSettings,
   getStatus,
@@ -178,7 +178,7 @@ export default definePlugin(() => {
     name: "Claude Sessions",
     titleView: <div className={staticClasses.Title}>Claude Sessions</div>,
     content: <Content />,
-    icon: <FaTerminal />,
+    icon: <ClaudeIcon />,
     onDismount() {
       routerHook.removeRoute(ROUTE);
     },
