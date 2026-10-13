@@ -115,8 +115,28 @@ class Service:
                 continue
             if key in settings and isinstance(settings[key], str):
                 self.settings[key] = settings[key].strip()
+        error = None
+        if self.settings.get("default_cwd"):
+            self.settings["default_cwd"] = os.path.expanduser(self.settings["default_cwd"])
+            error = self._make_default_folder()
         self._save_settings()
-        return await self.get_settings()
+        result = await self.get_settings()
+        if error:
+            result["error"] = error
+        return result
+
+    def _make_default_folder(self) -> Optional[str]:
+        """Create the default folder if it's missing. Returns an error message, or None."""
+        folder = self.settings.get("default_cwd") or ""
+        if not folder:
+            return None
+        if not os.path.isabs(folder):
+            return f"The default folder must be a full path, such as {self.home}/Projects."
+        try:
+            os.makedirs(folder, exist_ok=True)
+        except OSError as exc:
+            return f"Couldn't create {folder}: {exc.strerror or exc}"
+        return None
 
     # ------------------------------------------------------------------ #
     # Status
@@ -203,6 +223,8 @@ class Service:
             cwd = session["cwd"] or cwd
             if self.remotes.get(session_id):
                 return {"error": "This session is on Remote Control. Continue it from the Claude app, or stop Remote Control first."}
+        if not cwd:
+            self._make_default_folder()
         cwd = cwd or self.settings.get("default_cwd") or self.home
         try:
             job = await self.jobs.start(claude, prompt, session_id or None, cwd, self.settings)
@@ -239,6 +261,7 @@ class Service:
             return {"error": NO_CLI}
         if key == rc.SERVER:
             name = "Steam Deck"
+            self._make_default_folder()
             cwd = self.settings.get("default_cwd") or self.home
             self.settings["remote_server"] = "1"
             self._save_settings()

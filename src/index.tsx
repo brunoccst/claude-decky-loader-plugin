@@ -86,8 +86,8 @@ function SessionRows({ sessions, showProject }: { sessions: SessionSummary[] | n
 function SettingsModal({ closeModal, initial }: { closeModal?: () => void; initial: Settings }) {
   const [s, setS] = useState(initial);
   const save = async () => {
-    await setSettings(s);
-    toaster.toast({ title: "Claude Sessions", body: "Settings saved" });
+    const saved = await setSettings(s);
+    toaster.toast({ title: "Claude Sessions", body: saved.error ?? "Settings saved" });
     closeModal?.();
   };
   return (
@@ -120,7 +120,7 @@ function SettingsModal({ closeModal, initial }: { closeModal?: () => void; initi
       />
       <TextField
         label="Default folder for new sessions"
-        description="Empty uses your home folder."
+        description="Empty uses your home folder. Created if it doesn't exist."
         value={s.default_cwd}
         onChange={(e) => setS({ ...s, default_cwd: e.target.value })}
       />

@@ -43,6 +43,8 @@ export interface Settings {
   model: string;
   default_cwd: string;
   permission_modes: string[];
+  /** Set when saving worked but the default folder couldn't be created. */
+  error?: string;
 }
 
 export interface Status {
