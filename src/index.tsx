@@ -1,7 +1,7 @@
 import {
   ButtonItem,
+  ConfirmModal,
   DropdownItem,
-  ModalRoot,
   Navigation,
   PanelSection,
   PanelSectionRow,
@@ -91,8 +91,14 @@ function SettingsModal({ closeModal, initial }: { closeModal?: () => void; initi
     closeModal?.();
   };
   return (
-    <ModalRoot closeModal={closeModal} onOK={save} onCancel={closeModal}>
-      <div className={staticClasses.Title} style={{ marginBottom: 12 }}>Claude Sessions settings</div>
+    // ConfirmModal, unlike ModalRoot, shows Save and Cancel buttons.
+    <ConfirmModal
+      closeModal={closeModal}
+      onOK={save}
+      onCancel={closeModal}
+      strTitle="Claude Sessions settings"
+      strOKButtonText="Save"
+    >
       <TextField
         label="Claude Code CLI path"
         description="Leave empty to find it automatically (~/.local/bin/claude, npm global, …)."
@@ -118,7 +124,7 @@ function SettingsModal({ closeModal, initial }: { closeModal?: () => void; initi
         value={s.default_cwd}
         onChange={(e) => setS({ ...s, default_cwd: e.target.value })}
       />
-    </ModalRoot>
+    </ConfirmModal>
   );
 }
 
